@@ -1,0 +1,7 @@
+{
+  "name": "codebase-memory-explorer-backend",
+  "version": "1.0.0",
+  "description": "Backend for Codebase Memory Explorer - Git RAG Application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
