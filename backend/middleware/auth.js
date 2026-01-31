@@ -36,3 +36,29 @@ const protect = async (req, res, next) => {
       }
 
       req.user = user;
+      next();
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized. Invalid token.'
+      });
+    }
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error in authentication'
+    });
+  }
+};
+
+// Generate JWT Token
+const generateToken = (userId) => {
+  return jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+  );
+};
+
+module.exports = { protect, generateToken };

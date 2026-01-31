@@ -167,3 +167,172 @@ const DependencyGraph = () => {
                   graphType === 'function' 
                     ? 'bg-primary-100 text-primary-700' 
                     : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <FunctionSquare className="w-4 h-4" />
+                Functions
+              </button>
+            </div>
+
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
+              <button onClick={handleZoomIn} className="p-1.5 hover:bg-gray-100 rounded-md" title="Zoom In">
+                <ZoomIn className="w-4 h-4 text-gray-600" />
+              </button>
+              <button onClick={handleZoomOut} className="p-1.5 hover:bg-gray-100 rounded-md" title="Zoom Out">
+                <ZoomOut className="w-4 h-4 text-gray-600" />
+              </button>
+              <button onClick={handleFit} className="p-1.5 hover:bg-gray-100 rounded-md" title="Fit to View">
+                <Maximize2 className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mb-6 flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Graph Container */}
+        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 overflow-hidden" id="graph-container">
+          {graphData.nodes.length === 0 ? (
+            <div className="flex items-center justify-center h-96 text-gray-500">
+              <div className="text-center">
+                <Info className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <p>No dependencies found</p>
+              </div>
+            </div>
+          ) : (
+            <ForceGraph2D
+              ref={graphRef}
+              graphData={graphData}
+              width={dimensions.width}
+              height={dimensions.height}
+              nodeLabel={node => `${node.name}\n${node.path || ''}`}
+              nodeColor={getNodeColor}
+              nodeRelSize={6}
+              nodeVal={node => node.size}
+              linkColor={() => '#e5e7eb'}
+              linkWidth={1}
+              linkDirectionalArrowLength={4}
+              linkDirectionalArrowRelPos={1}
+              onNodeClick={handleNodeClick}
+              cooldownTicks={100}
+              enableNodeDrag={true}
+              enableZoomPanInteraction={true}
+            />
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {/* Stats */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <h3 className="font-medium text-gray-900 mb-3">Graph Stats</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Nodes</span>
+                <span className="font-medium">{graphData.nodes.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Edges</span>
+                <span className="font-medium">{graphData.links.length}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <h3 className="font-medium text-gray-900 mb-3">Legend</h3>
+            {graphType === 'file' ? (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f7df1e' }}></span>
+                  <span>JavaScript</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3178c6' }}></span>
+                  <span>TypeScript</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3776ab' }}></span>
+                  <span>Python</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366f1' }}></span>
+                  <span>Other</span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10b981' }}></span>
+                  <span>Function</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8b5cf6' }}></span>
+                  <span>Async</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f59e0b' }}></span>
+                  <span>Method</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#ef4444' }}></span>
+                  <span>Class</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Selected Node */}
+          {selectedNode && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="font-medium text-gray-900 mb-3">Selected Node</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-gray-600">Name:</span>
+                  <p className="font-mono text-gray-900 break-all">{selectedNode.name}</p>
+                </div>
+                {selectedNode.path && (
+                  <div>
+                    <span className="text-gray-600">Path:</span>
+                    <p className="font-mono text-gray-900 break-all text-xs">{selectedNode.path}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-gray-600">Type:</span>
+                  <p className="text-gray-900">{selectedNode.type}</p>
+                </div>
+                {selectedNode.language && (
+                  <div>
+                    <span className="text-gray-600">Language:</span>
+                    <p className="text-gray-900">{selectedNode.language}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Instructions */}
+          <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+            <h3 className="font-medium text-blue-900 mb-2">Tips</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Click a node to see details</li>
+              <li>• Drag nodes to rearrange</li>
+              <li>• Scroll to zoom in/out</li>
+              <li>• Arrows show dependencies</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DependencyGraph;

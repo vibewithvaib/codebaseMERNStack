@@ -23,3 +23,21 @@ router.use(protect);
 router.get('/', getRepositories);
 router.get('/:id', getRepository);
 router.post('/', addRepository);
+router.delete('/:id', deleteRepository);
+
+// Repository analysis
+router.post('/:id/analyze', reanalyzeRepository);
+
+// Repository data
+router.get('/:id/commits', getCommits);
+router.get('/:id/files', getFiles);
+router.get('/:id/files/:fileId', getFileContent);
+router.get('/:id/functions', getFunctions);
+router.get('/:id/graph', getDependencyGraph);
+router.get('/:id/timeline', getTimeline);
+
+// Q&A
+router.post('/:id/ask', askQuestion);
+router.get('/:id/questions', getQuestionHistory);
+
+module.exports = router;

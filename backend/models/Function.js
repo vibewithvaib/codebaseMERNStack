@@ -43,3 +43,34 @@ const functionSchema = new mongoose.Schema({
     default: false
   },
   isAsync: {
+    type: Boolean,
+    default: false
+  },
+  complexity: {
+    type: Number,
+    default: 1
+  },
+  calls: [{
+    type: String // function names that this function calls
+  }],
+  calledBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Function'
+  }],
+  docstring: {
+    type: String,
+    default: ''
+  },
+  code: {
+    type: String,
+    default: ''
+  }
+}, {
+  timestamps: true
+});
+
+// Indexes
+functionSchema.index({ repository: 1, name: 1 });
+functionSchema.index({ file: 1 });
+
+module.exports = mongoose.model('Function', functionSchema);

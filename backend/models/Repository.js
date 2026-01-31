@@ -35,3 +35,40 @@ const repositorySchema = new mongoose.Schema({
     default: 'pending'
   },
   statusMessage: {
+    type: String,
+    default: ''
+  },
+  analysisProgress: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  stats: {
+    totalCommits: { type: Number, default: 0 },
+    totalFiles: { type: Number, default: 0 },
+    totalFunctions: { type: Number, default: 0 },
+    totalDependencies: { type: Number, default: 0 },
+    languages: [{ type: String }]
+  },
+  lastAnalyzedAt: {
+    type: Date,
+    default: null
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  }
+}, {
+  timestamps: true
+});
+
+// Index for efficient queries
+repositorySchema.index({ user: 1, isDeleted: 1 });
+repositorySchema.index({ status: 1 });
+
+module.exports = mongoose.model('Repository', repositorySchema);

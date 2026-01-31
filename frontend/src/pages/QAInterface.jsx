@@ -220,3 +220,99 @@ const QAInterface = () => {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Functions */}
+              {answer.sources?.functions?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <FunctionSquare className="w-4 h-4" />
+                    Functions ({answer.sources.functions.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {answer.sources.functions.map((func, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div>
+                          <span className="font-mono text-sm text-gray-900">{func.name}</span>
+                          <span className="text-xs text-gray-500 ml-2">{func.filePath}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {Math.round(func.relevanceScore * 100)}% relevant
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Commits */}
+              {answer.sources?.commits?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <GitCommit className="w-4 h-4" />
+                    Commits ({answer.sources.commits.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {answer.sources.commits.map((commit, i) => (
+                      <div key={i} className="p-2 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <code className="text-xs bg-gray-200 px-2 py-0.5 rounded">{commit.hash}</code>
+                          <span className="text-xs text-gray-500">
+                            {commit.date && format(new Date(commit.date), 'MMM d, yyyy')}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-1">{commit.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Graph Nodes */}
+              {answer.sources?.graphNodes?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Network className="w-4 h-4" />
+                    Graph Nodes ({answer.sources.graphNodes.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {answer.sources.graphNodes.map((node, i) => (
+                      <span 
+                        key={i} 
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
+                      >
+                        <span className={`w-2 h-2 rounded-full ${
+                          node.nodeType === 'file' ? 'bg-blue-500' : 'bg-green-500'
+                        }`}></span>
+                        {node.nodeName}
+                        {node.connections > 0 && (
+                          <span className="text-xs text-gray-500">({node.connections})</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata */}
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Processed in {answer.processingTime}ms</span>
+            </div>
+            <Link 
+              to={`/repository/${id}/history`}
+              className="text-primary-600 hover:text-primary-700"
+            >
+              View Question History →
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default QAInterface;

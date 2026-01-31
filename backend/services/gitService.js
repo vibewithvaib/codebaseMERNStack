@@ -108,3 +108,168 @@ class GitService {
               filename: f.file,
               additions: f.insertions || 0,
               deletions: f.deletions || 0,
+              status: f.binary ? 'binary' : 'modified'
+            })),
+            stats: {
+              totalAdditions: diffSummary.insertions || 0,
+              totalDeletions: diffSummary.deletions || 0,
+              filesChangedCount: (diffSummary.files || []).length
+            },
+            parentHashes: commit.refs ? [commit.refs] : []
+          });
+        } catch (commitError) {
+          console.error(`Error processing commit ${commit.hash}:`, commitError);
+        }
+      }
+
+      return commits;
+    } catch (error) {
+      console.error('Error getting commit history:', error);
+      return [];
+    }
+  }
+
+  async getRepositoryFiles(repoPath) {
+    const files = [];
+    await this.walkDirectory(repoPath, repoPath, files);
+    return files;
+  }
+
+  async walkDirectory(basePath, currentPath, files, maxDepth = 10, currentDepth = 0) {
+    if (currentDepth > maxDepth) return;
+
+    try {
+      const entries = await fs.readdir(currentPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const fullPath = path.join(currentPath, entry.name);
+        const relativePath = path.relative(basePath, fullPath);
+
+        // Skip hidden files, node_modules, .git, etc.
+        if (this.shouldSkip(entry.name, relativePath)) continue;
+
+        if (entry.isDirectory()) {
+          await this.walkDirectory(basePath, fullPath, files, maxDepth, currentDepth + 1);
+        } else if (entry.isFile()) {
+          try {
+            const stats = await fs.stat(fullPath);
+            const ext = path.extname(entry.name);
+            
+            // Skip large files (> 1MB) and binary files
+            if (stats.size > 1024 * 1024) continue;
+            if (this.isBinaryExtension(ext)) continue;
+
+            let content = '';
+            try {
+              content = await fs.readFile(fullPath, 'utf-8');
+            } catch (e) {
+              // Binary or unreadable file
+              continue;
+            }
+
+            files.push({
+              path: relativePath,
+              filename: entry.name,
+              extension: ext,
+              language: this.getLanguage(ext),
+              content,
+              size: stats.size,
+              lineCount: content.split('\n').length
+            });
+          } catch (e) {
+            // Skip files we can't read
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error walking directory ${currentPath}:`, error);
+    }
+  }
+
+  shouldSkip(name, relativePath) {
+    const skipPatterns = [
+      'node_modules',
+      '.git',
+      '.svn',
+      '.hg',
+      '__pycache__',
+      '.DS_Store',
+      'dist',
+      'build',
+      'coverage',
+      '.next',
+      '.nuxt',
+      'vendor',
+      '.idea',
+      '.vscode',
+      '*.min.js',
+      '*.map',
+      'package-lock.json',
+      'yarn.lock',
+      'pnpm-lock.yaml'
+    ];
+
+    return skipPatterns.some(pattern => {
+      if (pattern.startsWith('*')) {
+        return name.endsWith(pattern.slice(1));
+      }
+      return name === pattern || relativePath.includes(`/${pattern}/`) || relativePath.startsWith(`${pattern}/`);
+    });
+  }
+
+  isBinaryExtension(ext) {
+    const binaryExts = [
+      '.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg',
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx',
+      '.zip', '.tar', '.gz', '.rar',
+      '.exe', '.dll', '.so', '.dylib',
+      '.woff', '.woff2', '.ttf', '.eot',
+      '.mp3', '.mp4', '.wav', '.avi',
+      '.sqlite', '.db'
+    ];
+    return binaryExts.includes(ext.toLowerCase());
+  }
+
+  getLanguage(ext) {
+    const languageMap = {
+      '.js': 'javascript',
+      '.jsx': 'javascript',
+      '.ts': 'typescript',
+      '.tsx': 'typescript',
+      '.py': 'python',
+      '.java': 'java',
+      '.c': 'c',
+      '.cpp': 'cpp',
+      '.h': 'c',
+      '.hpp': 'cpp',
+      '.cs': 'csharp',
+      '.go': 'go',
+      '.rb': 'ruby',
+      '.php': 'php',
+      '.swift': 'swift',
+      '.kt': 'kotlin',
+      '.rs': 'rust',
+      '.scala': 'scala',
+      '.vue': 'vue',
+      '.svelte': 'svelte',
+      '.html': 'html',
+      '.css': 'css',
+      '.scss': 'scss',
+      '.sass': 'sass',
+      '.less': 'less',
+      '.json': 'json',
+      '.xml': 'xml',
+      '.yaml': 'yaml',
+      '.yml': 'yaml',
+      '.md': 'markdown',
+      '.sql': 'sql',
+      '.sh': 'shell',
+      '.bash': 'shell',
+      '.zsh': 'shell',
+      '.dockerfile': 'dockerfile'
+    };
+    return languageMap[ext.toLowerCase()] || 'unknown';
+  }
+}
+
+module.exports = new GitService();

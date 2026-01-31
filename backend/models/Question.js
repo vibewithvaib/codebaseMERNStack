@@ -23,3 +23,10 @@ const questionSchema = new mongoose.Schema({
     default: 'pending'
   }
 }, {
+  timestamps: true
+});
+
+// Indexes
+questionSchema.index({ user: 1, repository: 1, createdAt: -1 });
+
+module.exports = mongoose.model('Question', questionSchema);

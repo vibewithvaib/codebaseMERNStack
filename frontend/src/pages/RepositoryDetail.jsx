@@ -202,3 +202,140 @@ const RepositoryDetail = () => {
             {['overview', 'files', 'functions', 'commits'].map(tab => (
               <button
                 key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab
+                    ? 'border-primary-600 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Languages</h3>
+                <div className="flex flex-wrap gap-2">
+                  {repository.stats?.languages?.map(lang => (
+                    <span key={lang} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Recent Activity</h3>
+                <div className="space-y-3">
+                  {commits.slice(0, 5).map(commit => (
+                    <div key={commit._id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <GitCommit className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-gray-900">{commit.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {commit.author?.name} • {format(new Date(commit.date), 'MMM d, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'files' && (
+            <div>
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {files.length} Files
+                </h3>
+              </div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {files.map(file => (
+                  <div key={file._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileCode className="w-5 h-5 text-gray-400" />
+                      <span className="text-sm font-mono text-gray-700">{file.path}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>{file.language}</span>
+                      <span>{file.lineCount} lines</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'functions' && (
+            <div>
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {functions.length} Functions
+                </h3>
+              </div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {functions.map(func => (
+                  <div key={func._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FunctionSquare className="w-5 h-5 text-primary-500" />
+                      <div>
+                        <span className="text-sm font-mono text-gray-900">{func.name}</span>
+                        <span className="text-xs text-gray-500 ml-2">({func.type})</span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {func.file?.path || 'Unknown file'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'commits' && (
+            <div>
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {commits.length} Commits
+                </h3>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {commits.map(commit => (
+                  <div key={commit._id} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <GitCommit className="w-5 h-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-gray-900 font-medium">{commit.message}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {commit.author?.name} • {format(new Date(commit.date), 'MMM d, yyyy HH:mm')}
+                          </p>
+                        </div>
+                      </div>
+                      <code className="text-xs bg-gray-200 px-2 py-1 rounded">{commit.shortHash}</code>
+                    </div>
+                    {commit.stats && (
+                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 pl-8">
+                        <span className="text-green-600">+{commit.stats.totalAdditions}</span>
+                        <span className="text-red-600">-{commit.stats.totalDeletions}</span>
+                        <span>{commit.stats.filesChangedCount} files</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RepositoryDetail;

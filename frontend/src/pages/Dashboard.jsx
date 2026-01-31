@@ -218,3 +218,151 @@ const Dashboard = () => {
       )}
 
       {/* Add Repository Modal */}
+      {showAddModal && (
+        <AddRepositoryModal 
+          onClose={() => setShowAddModal(false)} 
+          onSuccess={() => {
+            setShowAddModal(false);
+            fetchRepositories();
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// Add Repository Modal Component
+const AddRepositoryModal = ({ onClose, onSuccess }) => {
+  const [source, setSource] = useState('github');
+  const [url, setUrl] = useState('');
+  const [localPath, setLocalPath] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await repositoryAPI.add({
+        source,
+        url: source === 'github' ? url : undefined,
+        path: source === 'local' ? localPath : undefined
+      });
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add repository');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold text-gray-900">Add Repository</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Source Type</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="source"
+                  value="github"
+                  checked={source === 'github'}
+                  onChange={(e) => setSource(e.target.value)}
+                  className="text-primary-600 focus:ring-primary-500"
+                />
+                <Github className="w-5 h-5" />
+                <span>GitHub URL</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="source"
+                  value="local"
+                  checked={source === 'local'}
+                  onChange={(e) => setSource(e.target.value)}
+                  className="text-primary-600 focus:ring-primary-500"
+                />
+                <Folder className="w-5 h-5" />
+                <span>Local Path</span>
+              </label>
+            </div>
+          </div>
+
+          {source === 'github' ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                GitHub Repository URL
+              </label>
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://github.com/user/repo"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter the full GitHub URL (public repositories only)
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Local Repository Path
+              </label>
+              <input
+                type="text"
+                value={localPath}
+                onChange={(e) => setLocalPath(e.target.value)}
+                placeholder="/path/to/your/repository"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter the absolute path to a local git repository
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Add Repository
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

@@ -201,3 +201,91 @@ const Timeline = () => {
                     borderRadius: '8px'
                   }}
                   content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border rounded-lg shadow-lg">
+                          <p className="font-medium text-sm mb-1">{data.message?.substring(0, 50)}</p>
+                          <p className="text-xs text-gray-500">{data.hash}</p>
+                          <p className="text-xs mt-1">
+                            <span className="text-green-600">+{data.additions}</span>
+                            {' / '}
+                            <span className="text-red-600">-{data.deletions}</span>
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar 
+                  dataKey="filesChanged" 
+                  fill="#6366f1" 
+                  name="Files Changed"
+                  onClick={(data) => handleCommitClick(data)}
+                  cursor="pointer"
+                />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Commits List */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Commit History</h3>
+        </div>
+        <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+          {(timelineData?.commits || []).map((commit, index) => (
+            <div 
+              key={index}
+              onClick={() => setSelectedCommit(selectedCommit?.hash === commit.hash ? null : commit)}
+              className={`p-4 cursor-pointer transition-colors ${
+                selectedCommit?.hash === commit.hash ? 'bg-primary-50' : 'hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <GitCommit className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{commit.message}</p>
+                    <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                      <span>{commit.author}</span>
+                      <span>{format(new Date(commit.date), 'MMM d, yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs">
+                    <span className="text-green-600">+{commit.additions}</span>
+                    {' / '}
+                    <span className="text-red-600">-{commit.deletions}</span>
+                  </div>
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">{commit.hash}</code>
+                </div>
+              </div>
+
+              {/* Expanded View */}
+              {selectedCommit?.hash === commit.hash && commit.files && commit.files.length > 0 && (
+                <div className="mt-4 pl-8 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Changed Files:</h4>
+                  <div className="space-y-1">
+                    {commit.files.map((file, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                        <FileCode className="w-4 h-4" />
+                        <span className="font-mono text-xs">{file}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Timeline;

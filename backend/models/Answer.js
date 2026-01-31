@@ -52,3 +52,17 @@ const answerSchema = new mongoose.Schema({
     type: Number,
     min: 0,
     max: 1,
+    default: 0.5
+  },
+  processingTime: {
+    type: Number, // milliseconds
+    default: 0
+  }
+}, {
+  timestamps: true
+});
+
+// Index
+answerSchema.index({ question: 1 });
+
+module.exports = mongoose.model('Answer', answerSchema);
